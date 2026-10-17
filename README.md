@@ -5,6 +5,7 @@ A complete, fully functional, modern social media web application engineered wit
 Built following clean **MVC architecture**, robust session-based authentication, and modern web application security practices.
 
 ---
+🔗 Live Demo: [https://social-media-platform-3lmu.onrender.com)
 
 ## 🌟 Key Features
 
