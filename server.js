@@ -22,7 +22,16 @@ const searchRoutes = require('./routes/searchRoutes');
 const app = express();
 
 // Connect to Database
-connectDB();
+// Ensure MongoDB is connected before handling requests.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('MongoDB connection failed:', error.message);
+    next(error);
+  }
+});
 
 // Trust proxy for production environments (behind reverse proxies)
 if (process.env.NODE_ENV === 'production') {
@@ -63,7 +72,7 @@ const mongoUrl = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/social_me
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'fallback_social_media_session_secret_key_123',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
