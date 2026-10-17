@@ -1,0 +1,188 @@
+<%- include('partials/head', { title: 'Home Feed' }) %>
+<%- include('partials/navbar') %>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- Flash Messages -->
+  <%- include('partials/flash-messages') %>
+
+  <!-- 3-Column Responsive Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- LEFT SIDEBAR: Current User Summary (hidden on mobile, visible on lg) -->
+    <aside class="hidden lg:block lg:col-span-3 space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <!-- Banner gradient -->
+        <div class="h-20 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+        <div class="px-5 pb-5 pt-0 relative text-center">
+          <!-- Avatar overlapping banner -->
+          <div class="-mt-10 mb-3 inline-block">
+            <img
+              src="<%= currentUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff` %>"
+              alt="<%= currentUser.name %>"
+              class="h-20 w-20 rounded-full object-cover border-4 border-white shadow-md mx-auto"
+              onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(currentUser.name) %>&background=6366f1&color=fff'"
+            >
+          </div>
+          <h2 class="text-base font-bold text-slate-900 leading-tight">
+            <a href="/users/<%= currentUser.username %>" class="hover:text-indigo-600 transition-colors">
+              <%= currentUser.name %>
+            </a>
+          </h2>
+          <p class="text-xs text-slate-400 mb-3">@<%= currentUser.username %></p>
+
+          <% if (currentUser.bio) { %>
+            <p class="text-xs text-slate-600 mb-4 line-clamp-2"><%= currentUser.bio %></p>
+          <% } %>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-center">
+            <div>
+              <p class="text-sm font-bold text-slate-900"><%= userStats.postsCount %></p>
+              <p class="text-[11px] text-slate-400 font-medium">Posts</p>
+            </div>
+            <a href="/users/<%= currentUser.username %>/followers" class="hover:bg-slate-50 rounded-lg p-1 transition-colors">
+              <p class="text-sm font-bold text-slate-900"><%= userStats.followersCount %></p>
+              <p class="text-[11px] text-slate-400 font-medium">Followers</p>
+            </a>
+            <a href="/users/<%= currentUser.username %>/following" class="hover:bg-slate-50 rounded-lg p-1 transition-colors">
+              <p class="text-sm font-bold text-slate-900"><%= userStats.followingCount %></p>
+              <p class="text-[11px] text-slate-400 font-medium">Following</p>
+            </a>
+          </div>
+
+          <div class="mt-4">
+            <a
+              href="/users/<%= currentUser.username %>"
+              class="block w-full py-2 px-3 text-xs font-semibold rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+            >
+              View Full Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER FEED COLUMN -->
+    <section class="col-span-1 lg:col-span-6 space-y-6">
+
+      <!-- Create Post Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-start space-x-3">
+          <img
+            src="<%= currentUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff` %>"
+            alt="<%= currentUser.name %>"
+            class="h-10 w-10 rounded-full object-cover border border-slate-200 flex-shrink-0"
+            onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(currentUser.name) %>&background=6366f1&color=fff'"
+          >
+          <div class="flex-1">
+            <form action="/posts" method="POST" id="create-post-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <div class="mb-3">
+                <textarea
+                  name="content"
+                  rows="3"
+                  required
+                  placeholder="What's happening, <%= currentUser.name.split(' ')[0] %>?"
+                  class="w-full text-slate-800 placeholder-slate-400 text-sm focus:outline-none resize-none bg-transparent"
+                ></textarea>
+              </div>
+
+              <!-- Optional Image URL Input -->
+              <div class="mb-4">
+                <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-200 transition-all">
+                  <svg class="h-4 w-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    placeholder="Attach image URL (optional: https://...)"
+                    class="w-full text-xs bg-transparent text-slate-700 placeholder-slate-400 focus:outline-none"
+                  >
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span class="text-xs text-slate-400">Share your thoughts with your network</span>
+                <button
+                  type="submit"
+                  class="inline-flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1"
+                >
+                  <span>Post</span>
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed Discovery Fallback Banner -->
+      <% if (typeof isFallbackFeed !== 'undefined' && isFallbackFeed) { %>
+        <div class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800 flex items-center space-x-3">
+          <svg class="h-5 w-5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p>
+            You are not following anyone yet! Here are the latest public posts from the community. Follow creators on the right to tailor your feed.
+          </p>
+        </div>
+      <% } %>
+
+      <!-- Posts List -->
+      <% if (posts && posts.length > 0) { %>
+        <div class="space-y-4">
+          <% posts.forEach(function(post) { %>
+            <%- include('partials/post-card', { post }) %>
+          <% }); %>
+        </div>
+
+        <!-- Pagination Controls -->
+        <%- include('partials/pagination') %>
+
+      <% } else { %>
+        <!-- Empty State Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+          <div class="h-16 w-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800 mb-1">Your Feed is Quiet</h3>
+          <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6">
+            There are no posts to display right now. Share your first post above or find inspiring people to follow.
+          </p>
+          <a
+            href="/search"
+            class="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Explore People</span>
+          </a>
+        </div>
+      <% } %>
+
+    </section>
+
+    <!-- RIGHT SIDEBAR: Suggested Users (hidden on mobile, visible on lg) -->
+    <aside class="hidden lg:block lg:col-span-3 space-y-5">
+      <%- include('partials/suggested-users') %>
+
+      <!-- Helpful Platform Tips Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-xs text-slate-500 space-y-2">
+        <h3 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">About Pulse</h3>
+        <p>A fast, modern social network built with server-side rendered EJS templates, Tailwind CSS utilities, Express.js MVC, and MongoDB.</p>
+        <p class="text-[11px] text-slate-400 pt-2 border-t border-slate-100">Clean architecture &bull; Fully secure &bull; Fast</p>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>
+

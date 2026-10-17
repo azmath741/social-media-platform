@@ -1,0 +1,115 @@
+<%- include('partials/head', { title: 'Discover & Search' }) %>
+<%- include('partials/navbar') %>
+
+<main class="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%- include('partials/flash-messages') %>
+
+  <!-- Search Header & Input Box -->
+  <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-6">
+    <h1 class="text-xl font-extrabold text-slate-900 tracking-tight mb-4">Find People on Pulse</h1>
+
+    <form action="/search" method="GET" class="relative">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          name="q"
+          value="<%= typeof query !== 'undefined' ? query : '' %>"
+          placeholder="Search by name or @username..."
+          class="w-full pl-10 pr-24 py-3 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all"
+          autofocus
+        >
+        <button
+          type="submit"
+          class="absolute right-2 top-2 bottom-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Section -->
+  <div>
+    <% if (typeof query !== 'undefined' && query) { %>
+      <div class="flex items-center justify-between mb-4 px-1">
+        <h2 class="text-sm font-bold text-slate-700">
+          Search Results for "<span class="text-indigo-600"><%= query %></span>"
+        </h2>
+        <span class="text-xs text-slate-400"><%= results ? results.length : 0 %> matches found</span>
+      </div>
+
+      <% if (results && results.length > 0) { %>
+        <div class="space-y-3">
+          <% results.forEach(function(user) { %>
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center justify-between gap-4 hover:border-slate-300 transition-colors">
+              <a href="/users/<%= user.username %>" class="flex items-center space-x-3 min-w-0 group">
+                <img
+                  src="<%= user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff` %>"
+                  alt="<%= user.name %>"
+                  class="h-12 w-12 rounded-full object-cover border border-slate-200 flex-shrink-0 group-hover:opacity-90 transition-opacity"
+                  onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.name) %>&background=6366f1&color=fff'"
+                >
+                <div class="min-w-0">
+                  <p class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                    <%= user.name %>
+                  </p>
+                  <p class="text-xs text-slate-400 truncate">@<%= user.username %></p>
+                  <% if (user.bio) { %>
+                    <p class="text-xs text-slate-600 mt-1 line-clamp-1"><%= user.bio %></p>
+                  <% } %>
+                </div>
+              </a>
+
+              <!-- Follow / Unfollow Button -->
+              <form
+                action="/users/<%= user._id %>/<%= user.isFollowing ? 'unfollow' : 'follow' %>"
+                method="POST"
+                class="follow-form flex-shrink-0 m-0"
+                data-user-id="<%= user._id %>"
+              >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button
+                  type="submit"
+                  class="follow-btn text-xs font-semibold px-4 py-2 rounded-xl transition-all shadow-sm <%= user.isFollowing ? 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 border border-slate-300' : 'bg-indigo-600 text-white hover:bg-indigo-700' %>"
+                >
+                  <%= user.isFollowing ? 'Following' : 'Follow' %>
+                </button>
+              </form>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <!-- Empty Results -->
+        <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+          <div class="h-12 w-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800">No users found</h3>
+          <p class="text-xs text-slate-400 mt-1">Try searching for different keywords or checking for spelling errors.</p>
+        </div>
+      <% } %>
+
+    <% } else { %>
+      <!-- Pre-search Prompt -->
+      <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="h-14 w-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">Explore and Connect</h3>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Enter a person's name or @handle in the search bar above to discover their profile and posts.</p>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('partials/footer') %>
+

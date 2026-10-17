@@ -1,0 +1,24 @@
+  <footer class="mt-auto border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <div class="h-6 w-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+          P
+        </div>
+        <span class="font-semibold text-slate-700">Pulse Social &copy; <%= new Date().getFullYear() %></span>
+      </div>
+      <p class="text-slate-400">Crafted with Express, EJS, Tailwind CSS &amp; MongoDB</p>
+      <div class="flex items-center space-x-4">
+        <a href="/" class="hover:text-indigo-600 transition-colors">Home</a>
+        <a href="/search" class="hover:text-indigo-600 transition-colors">Discover</a>
+        <% if (currentUser) { %>
+          <a href="/profile" class="hover:text-indigo-600 transition-colors">Profile</a>
+        <% } %>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

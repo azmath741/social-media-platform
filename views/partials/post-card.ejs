@@ -1,0 +1,119 @@
+<article class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow" id="post-<%= post._id %>">
+  <!-- Post Author Header -->
+  <div class="flex items-start justify-between mb-3">
+    <div class="flex items-center space-x-3">
+      <a href="/users/<%= post.author ? post.author.username : '#' %>" class="flex-shrink-0 group">
+        <img
+          src="<%= post.author && post.author.profilePicture ? post.author.profilePicture : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author ? post.author.name : 'User')}&background=6366f1&color=fff` %>"
+          alt="<%= post.author ? post.author.name : 'User' %>"
+          class="h-11 w-11 rounded-full object-cover border border-slate-200 group-hover:opacity-90 transition-opacity"
+          onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(post.author ? post.author.name : 'User') %>&background=6366f1&color=fff'"
+        >
+      </a>
+      <div>
+        <div class="flex items-center space-x-2">
+          <a href="/users/<%= post.author ? post.author.username : '#' %>" class="text-sm font-bold text-slate-900 hover:text-indigo-600 transition-colors">
+            <%= post.author ? post.author.name : 'Unknown Author' %>
+          </a>
+          <span class="text-xs text-slate-400">&bull;</span>
+          <span class="text-xs text-slate-400">
+            <%= new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+          </span>
+        </div>
+        <p class="text-xs text-slate-500">
+          <a href="/users/<%= post.author ? post.author.username : '#' %>" class="hover:underline">
+            @<%= post.author ? post.author.username : 'user' %>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions for Post Owner -->
+    <% if (currentUser && post.author && post.author._id.toString() === currentUser._id.toString()) { %>
+      <div class="flex items-center space-x-1">
+        <!-- Delete Post Button -->
+        <form action="/posts/<%= post._id %>/delete" method="POST" class="confirm-action inline m-0" data-confirm-message="Are you sure you want to permanently delete this post?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button
+            type="submit"
+            class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+            title="Delete post"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Post Content -->
+  <div class="mb-4 text-slate-800 text-[15px] leading-relaxed whitespace-pre-line break-words">
+    <%= post.content %>
+  </div>
+
+  <!-- Post Image (if present) -->
+  <% if (post.imageUrl && post.imageUrl.trim() !== '') { %>
+    <div class="mb-4 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-h-[460px] flex items-center justify-center">
+      <img
+        src="<%= post.imageUrl %>"
+        alt="Post attachment"
+        class="w-full h-auto max-h-[460px] object-cover hover:scale-[1.01] transition-transform duration-200"
+        loading="lazy"
+        onerror="this.parentElement.style.display='none'"
+      >
+    </div>
+  <% } %>
+
+  <!-- Engagement Bar -->
+  <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-sm">
+    <div class="flex items-center space-x-4">
+      
+      <!-- Like/Unlike Button & Counter -->
+      <form
+        action="/posts/<%= post._id %>/<%= post.isLiked ? 'unlike' : 'like' %>"
+        method="POST"
+        class="like-form flex items-center m-0"
+        data-post-id="<%= post._id %>"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button
+          type="submit"
+          class="like-btn flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-all <%= post.isLiked ? 'text-rose-600 bg-rose-50' : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50' %>"
+          aria-label="<%= post.isLiked ? 'Unlike post' : 'Like post' %>"
+        >
+          <svg class="h-4 w-4 heart-icon transition-transform active:scale-125" fill="<%= post.isLiked ? 'currentColor' : 'none' %>" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span class="like-count font-medium text-xs"><%= post.likes ? post.likes.length : 0 %></span>
+        </button>
+      </form>
+
+      <!-- Comments Link & Counter -->
+      <a
+        href="/posts/<%= post._id %>"
+        class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+        title="View comments"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span class="font-medium text-xs"><%= typeof post.commentCount !== 'undefined' ? post.commentCount : 0 %></span>
+      </a>
+
+    </div>
+
+    <!-- Direct Post Detail Link -->
+    <a
+      href="/posts/<%= post._id %>"
+      class="text-xs font-medium text-slate-400 hover:text-indigo-600 transition-colors flex items-center space-x-1"
+    >
+      <span>Details</span>
+      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </a>
+  </div>
+</article>
+

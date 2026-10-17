@@ -1,0 +1,81 @@
+<%- include('partials/head', { title: `${profileUser.name} - Followers` }) %>
+<%- include('partials/navbar') %>
+
+<main class="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%- include('partials/flash-messages') %>
+
+  <!-- Breadcrumb / Header -->
+  <div class="flex items-center space-x-3 mb-6">
+    <a
+      href="/users/<%= profileUser.username %>"
+      class="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm transition-colors"
+      title="Back to profile"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Followers</h1>
+      <p class="text-xs text-slate-400">People following <a href="/users/<%= profileUser.username %>" class="text-indigo-600 hover:underline">@<%= profileUser.username %></a></p>
+    </div>
+  </div>
+
+  <!-- Followers List -->
+  <% if (followers && followers.length > 0) { %>
+    <div class="space-y-3">
+      <% followers.forEach(function(user) { %>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center justify-between gap-4">
+          <a href="/users/<%= user.username %>" class="flex items-center space-x-3 min-w-0 group">
+            <img
+              src="<%= user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff` %>"
+              alt="<%= user.name %>"
+              class="h-11 w-11 rounded-full object-cover border border-slate-200 flex-shrink-0 group-hover:opacity-90 transition-opacity"
+              onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.name) %>&background=6366f1&color=fff'"
+            >
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+                <%= user.name %>
+              </p>
+              <p class="text-xs text-slate-400 truncate">@<%= user.username %></p>
+              <% if (user.bio) { %>
+                <p class="text-xs text-slate-600 mt-0.5 line-clamp-1"><%= user.bio %></p>
+              <% } %>
+            </div>
+          </a>
+
+          <!-- Follow Button (hide if viewing yourself in the list) -->
+          <% if (!user.isSelf) { %>
+            <form
+              action="/users/<%= user._id %>/<%= user.isFollowing ? 'unfollow' : 'follow' %>"
+              method="POST"
+              class="follow-form flex-shrink-0 m-0"
+              data-user-id="<%= user._id %>"
+            >
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button
+                type="submit"
+                class="follow-btn text-xs font-semibold px-4 py-1.5 rounded-xl transition-all shadow-sm <%= user.isFollowing ? 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 border border-slate-300' : 'bg-indigo-600 text-white hover:bg-indigo-700' %>"
+              >
+                <%= user.isFollowing ? 'Following' : 'Follow' %>
+              </button>
+            </form>
+          <% } %>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+      <div class="h-12 w-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-800">No followers yet</h3>
+      <p class="text-xs text-slate-400 mt-1">When people follow @<%= profileUser.username %>, they will appear here.</p>
+    </div>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>
+

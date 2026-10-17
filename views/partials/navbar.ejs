@@ -1,0 +1,202 @@
+<nav class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 gap-4">
+
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 flex-shrink-0">
+        <a href="/" class="flex items-center space-x-2 group">
+          <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white font-extrabold text-lg shadow-sm group-hover:scale-105 transition-transform">
+            P
+          </div>
+          <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent tracking-tight">Pulse</span>
+        </a>
+      </div>
+
+      <!-- Quick Search Bar (Desktop) -->
+      <% if (currentUser) { %>
+        <div class="hidden md:flex flex-1 max-w-md mx-4">
+          <form action="/search" method="GET" class="w-full relative">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                name="q"
+                placeholder="Search users by name or @username..."
+                class="w-full pl-9 pr-4 py-1.5 text-sm bg-slate-100 hover:bg-slate-200/70 focus:bg-white text-slate-800 placeholder-slate-400 rounded-full border border-transparent focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+              >
+            </div>
+          </form>
+        </div>
+      <% } %>
+
+      <!-- Right Navigation Links (Desktop) -->
+      <div class="hidden md:flex items-center space-x-3">
+        <% if (currentUser) { %>
+          <a
+            href="/"
+            class="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors <%= typeof currentPath !== 'undefined' && currentPath === '/' ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' %>"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Feed</span>
+          </a>
+
+          <a
+            href="/search"
+            class="flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors <%= typeof currentPath !== 'undefined' && currentPath.startsWith('/search') ? 'text-indigo-600 bg-indigo-50 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' %>"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Search</span>
+          </a>
+
+          <!-- User Profile link & Avatar -->
+          <a
+            href="/users/<%= currentUser.username %>"
+            class="flex items-center space-x-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-slate-100 border border-slate-200 transition-colors"
+          >
+            <img
+              src="<%= currentUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff` %>"
+              alt="<%= currentUser.name %>"
+              class="h-7 w-7 rounded-full object-cover border border-slate-200"
+              onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(currentUser.name) %>&background=6366f1&color=fff'"
+            >
+            <span class="text-sm font-medium text-slate-700 max-w-[120px] truncate"><%= currentUser.name.split(' ')[0] %></span>
+          </a>
+
+          <!-- Logout Form -->
+          <form action="/logout" method="POST" class="inline m-0">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button
+              type="submit"
+              class="flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+              title="Log out of account"
+            >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </form>
+        <% } else { %>
+          <a
+            href="/login"
+            class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            Sign In
+          </a>
+          <a
+            href="/register"
+            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all"
+          >
+            Get Started
+          </a>
+        <% } %>
+      </div>
+
+      <!-- Mobile Hamburger Button -->
+      <div class="flex md:hidden items-center">
+        <button
+          type="button"
+          id="mobile-menu-btn"
+          class="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none"
+          aria-label="Toggle navigation menu"
+        >
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Navigation -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-4 space-y-2">
+    <% if (currentUser) { %>
+      <div class="flex items-center space-x-3 px-2 py-2 mb-2 border-b border-slate-100">
+        <img
+          src="<%= currentUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff` %>"
+          alt="<%= currentUser.name %>"
+          class="h-10 w-10 rounded-full object-cover border border-slate-200"
+        >
+        <div>
+          <p class="text-sm font-semibold text-slate-900"><%= currentUser.name %></p>
+          <p class="text-xs text-slate-500">@<%= currentUser.username %></p>
+        </div>
+      </div>
+
+      <!-- Mobile Search Form -->
+      <form action="/search" method="GET" class="mb-3">
+        <div class="relative">
+          <input
+            type="text"
+            name="q"
+            placeholder="Search users..."
+            class="w-full pl-9 pr-4 py-2 text-sm bg-slate-100 text-slate-800 rounded-lg border border-transparent focus:border-indigo-400 focus:outline-none"
+          >
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+        </div>
+      </form>
+
+      <a
+        href="/"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-100"
+      >
+        Home Feed
+      </a>
+      <a
+        href="/search"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-100"
+      >
+        Search Users
+      </a>
+      <a
+        href="/users/<%= currentUser.username %>"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-100"
+      >
+        My Profile
+      </a>
+      <a
+        href="/profile/edit"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-100"
+      >
+        Edit Profile
+      </a>
+
+      <form action="/logout" method="POST" class="pt-2 border-t border-slate-100">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button
+          type="submit"
+          class="w-full text-left px-3 py-2 rounded-lg text-base font-medium text-rose-600 hover:bg-rose-50"
+        >
+          Sign Out
+        </button>
+      </form>
+    <% } else { %>
+      <a
+        href="/login"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-100"
+      >
+        Sign In
+      </a>
+      <a
+        href="/register"
+        class="block px-3 py-2 rounded-lg text-base font-medium text-indigo-600 hover:bg-indigo-50 font-semibold"
+      >
+        Create Account
+      </a>
+    <% } %>
+  </div>
+</nav>
+

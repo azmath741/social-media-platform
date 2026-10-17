@@ -1,0 +1,266 @@
+<%- include('partials/head', { title: `Post by ${post.author ? post.author.name : 'Pulse User'}` }) %>
+<%- include('partials/navbar') %>
+
+<main class="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <%- include('partials/flash-messages') %>
+
+  <!-- Back button -->
+  <div class="mb-4">
+    <a
+      href="/"
+      class="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+    >
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Back to Feed</span>
+    </a>
+  </div>
+
+  <!-- Main Post Card -->
+  <article class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm mb-6">
+    <div class="flex items-start justify-between mb-4">
+      <div class="flex items-center space-x-3">
+        <a href="/users/<%= post.author ? post.author.username : '#' %>">
+          <img
+            src="<%= post.author && post.author.profilePicture ? post.author.profilePicture : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author ? post.author.name : 'User')}&background=6366f1&color=fff` %>"
+            alt="<%= post.author ? post.author.name : 'User' %>"
+            class="h-12 w-12 rounded-full object-cover border border-slate-200"
+            onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(post.author ? post.author.name : 'User') %>&background=6366f1&color=fff'"
+          >
+        </a>
+        <div>
+          <a href="/users/<%= post.author ? post.author.username : '#' %>" class="text-base font-bold text-slate-900 hover:text-indigo-600 transition-colors">
+            <%= post.author ? post.author.name : 'Unknown Author' %>
+          </a>
+          <p class="text-xs text-slate-400">@<%= post.author ? post.author.username : 'user' %></p>
+        </div>
+      </div>
+
+      <!-- Post Owner Actions -->
+      <% if (post.isOwner) { %>
+        <div class="flex items-center space-x-2">
+          <!-- Toggle Edit Form Button -->
+          <button
+            type="button"
+            onclick="document.getElementById('edit-post-section').classList.toggle('hidden')"
+            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+            title="Edit post"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+
+          <!-- Delete Post Button -->
+          <form action="/posts/<%= post._id %>/delete" method="POST" class="confirm-action m-0" data-confirm-message="Are you sure you want to permanently delete this post and its comments?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button
+              type="submit"
+              class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+              title="Delete post"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Edit Post Inline Form (Hidden by default) -->
+    <% if (post.isOwner) { %>
+      <div id="edit-post-section" class="hidden mb-6 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Edit Post</h3>
+        <form action="/posts/<%= post._id %>/edit" method="POST" class="space-y-3">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <textarea
+            name="content"
+            rows="3"
+            required
+            class="w-full p-3 text-sm bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-none"
+          ><%= post.content %></textarea>
+          
+          <input
+            type="url"
+            name="imageUrl"
+            value="<%= post.imageUrl || '' %>"
+            placeholder="Optional Image URL"
+            class="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:outline-none"
+          >
+
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              onclick="document.getElementById('edit-post-section').classList.add('hidden')"
+              class="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm"
+            >
+              Update Post
+            </button>
+          </div>
+        </form>
+      </div>
+    <% } %>
+
+    <!-- Post Text -->
+    <div class="text-slate-800 text-base leading-relaxed whitespace-pre-line mb-4 break-words">
+      <%= post.content %>
+    </div>
+
+    <!-- Post Image -->
+    <% if (post.imageUrl && post.imageUrl.trim() !== '') { %>
+      <div class="mb-5 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 max-h-[500px] flex items-center justify-center">
+        <img
+          src="<%= post.imageUrl %>"
+          alt="Post image"
+          class="w-full h-auto max-h-[500px] object-cover"
+          onerror="this.parentElement.style.display='none'"
+        >
+      </div>
+    <% } %>
+
+    <!-- Timestamp & Stats -->
+    <div class="py-3 border-y border-slate-100 flex items-center justify-between text-xs text-slate-400">
+      <span>
+        <%= new Date(post.createdAt).toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric', year: 'numeric' }) %>
+      </span>
+      <div class="flex items-center space-x-4">
+        <span><strong class="text-slate-700"><%= post.likes ? post.likes.length : 0 %></strong> Likes</span>
+        <span><strong class="text-slate-700"><%= comments.length %></strong> Comments</span>
+      </div>
+    </div>
+
+    <!-- Actions (Like button) -->
+    <div class="pt-3 flex items-center space-x-4">
+      <form
+        action="/posts/<%= post._id %>/<%= post.isLiked ? 'unlike' : 'like' %>"
+        method="POST"
+        class="like-form flex items-center m-0"
+        data-post-id="<%= post._id %>"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button
+          type="submit"
+          class="like-btn flex items-center space-x-2 px-4 py-2 rounded-xl transition-all <%= post.isLiked ? 'text-rose-600 bg-rose-50' : 'text-slate-600 hover:text-rose-600 hover:bg-rose-50' %>"
+        >
+          <svg class="h-5 w-5 heart-icon transition-transform active:scale-125" fill="<%= post.isLiked ? 'currentColor' : 'none' %>" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span class="font-semibold text-xs"><%= post.isLiked ? 'Liked' : 'Like' %></span>
+          <span class="like-count font-bold text-xs ml-1">(<%= post.likes ? post.likes.length : 0 %>)</span>
+        </button>
+      </form>
+    </div>
+  </article>
+
+  <!-- Comments Section -->
+  <section class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+    <h2 class="text-base font-bold text-slate-900 mb-5 flex items-center space-x-2">
+      <span>Comments</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold"><%= comments.length %></span>
+    </h2>
+
+    <!-- Add Comment Form -->
+    <div class="flex items-start space-x-3 mb-8 pb-6 border-b border-slate-100">
+      <img
+        src="<%= currentUser.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff` %>"
+        alt="<%= currentUser.name %>"
+        class="h-9 w-9 rounded-full object-cover border border-slate-200 flex-shrink-0"
+        onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(currentUser.name) %>&background=6366f1&color=fff'"
+      >
+      <div class="flex-1">
+        <form action="/posts/<%= post._id %>/comments" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="mb-2">
+            <textarea
+              name="content"
+              rows="2"
+              required
+              maxlength="500"
+              placeholder="Write a constructive comment..."
+              class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition-all resize-none"
+            ></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              Post Comment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Comments List -->
+    <% if (comments && comments.length > 0) { %>
+      <div class="space-y-4">
+        <% comments.forEach(function(comment) { %>
+          <div class="flex items-start justify-between space-x-3 p-3 rounded-2xl hover:bg-slate-50/70 transition-colors">
+            <div class="flex items-start space-x-3 min-w-0 flex-1">
+              <a href="/users/<%= comment.author ? comment.author.username : '#' %>" class="flex-shrink-0">
+                <img
+                  src="<%= comment.author && comment.author.profilePicture ? comment.author.profilePicture : `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author ? comment.author.name : 'User')}&background=6366f1&color=fff` %>"
+                  alt="<%= comment.author ? comment.author.name : 'User' %>"
+                  class="h-9 w-9 rounded-full object-cover border border-slate-200"
+                  onerror="this.src='https://ui-avatars.com/api/?name=<%= encodeURIComponent(comment.author ? comment.author.name : 'User') %>&background=6366f1&color=fff'"
+                >
+              </a>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center space-x-2">
+                  <a href="/users/<%= comment.author ? comment.author.username : '#' %>" class="text-xs font-bold text-slate-900 hover:text-indigo-600 transition-colors">
+                    <%= comment.author ? comment.author.name : 'Unknown User' %>
+                  </a>
+                  <span class="text-xs text-slate-400">&bull;</span>
+                  <span class="text-[11px] text-slate-400">
+                    <%= new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                  </span>
+                </div>
+                <p class="text-xs text-slate-700 mt-1 whitespace-pre-line break-words leading-relaxed">
+                  <%= comment.content %>
+                </p>
+              </div>
+            </div>
+
+            <!-- Comment Moderation / Delete Button -->
+            <% if (comment.canDelete) { %>
+              <form
+                action="/posts/<%= post._id %>/comments/<%= comment._id %>/delete"
+                method="POST"
+                class="confirm-action m-0 flex-shrink-0"
+                data-confirm-message="Delete this comment?"
+              >
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button
+                  type="submit"
+                  class="p-1 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
+                  title="Delete comment"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </form>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-8">
+        <p class="text-xs font-medium text-slate-400">No comments yet. Be the first to share your thoughts!</p>
+      </div>
+    <% } %>
+  </section>
+
+</main>
+
+<%- include('partials/footer') %>
+
