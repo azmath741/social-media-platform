@@ -108,10 +108,17 @@ app.use('/', searchRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+// Start a local server during development.
+// Vercel can handle the exported Express app.
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
 
-module.exports = { app, server };
+  app.listen(PORT, () => {
+    console.log(
+      `Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+    );
+  });
+}
+
+module.exports = app;
 
